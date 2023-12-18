@@ -89,10 +89,31 @@ namespace TelegramBotExperiments
 
 9. Искусство и Творчество: Книги, которые помогут вам развивать творческий потенциал, вдохновляться и раскрывать свой творческий потенциал.";
 
-                await bot.SendTextMessageAsync(message.Chat.Id, genresList);
+                var keyboard = new ReplyKeyboardMarkup(new[]
+                    {
+            new[]
+            {
+                new KeyboardButton("Психология и Самопомощь"),
+                new KeyboardButton("Бизнес и Карьера"),
+                new KeyboardButton("Здоровье и Фитнес"),
+            },
+            new[]
+            {
+                new KeyboardButton("Личные Финансы"),
+                new KeyboardButton("Мотивация и Самодисциплина"),
+                new KeyboardButton("Образование и Новые Навыки"),
+            },
+            new[]
+            {
+                new KeyboardButton("Социальные отношения"),
+                new KeyboardButton("Религия и Духовное Развитие"),
+                new KeyboardButton("Искусство и Творчество"),
+            },
+        });
+
+                await bot.SendTextMessageAsync(message.Chat.Id, genresList, replyMarkup: keyboard);
             }
         }
-
 
         static void Main(string[] args)
         {
