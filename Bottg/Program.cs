@@ -15,7 +15,6 @@ namespace TelegramBotExperiments
 
         public static async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            // Некоторые действия
             Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(update));
             if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message)
             {
@@ -25,7 +24,7 @@ namespace TelegramBotExperiments
                     switch (message.Text.ToLower())
                     {
                         case "/start":
-                            await SendStartMessageAsync(message.Chat);
+                            await SendStartMessageAsync(message.Chat, message.From.Username);
                             break;
 
                         default:
@@ -43,23 +42,46 @@ namespace TelegramBotExperiments
 
         public static async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
-            // Некоторые действия
             Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(exception));
         }
 
-        static async Task SendStartMessageAsync(ChatId chatId)
+        static async Task SendStartMessageAsync(ChatId chatId, string username)
         {
             var keyboard = new InlineKeyboardMarkup(new[]
             {
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("Начнем!", "/book"),
-                }
+                    InlineKeyboardButton.WithCallbackData("1. Психология и самопомощь", "1"),
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("2. Бизнес и карьера", "2"),
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("3. Здоровье и фитнес", "3"),
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("4. Личные финансы", "4"),
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("5. Мотивация и дисциплина", "5"),
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("6. Социальные отношения", "6"),
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("7. Искусство и творчество", "7"),
+                },
             });
 
             await bot.SendTextMessageAsync(
-                chatId, 
-                "Я – твой верный компаньон в литературном саморазвитии. Здесь ты можешь найти огромное количество книг, скачать любимые произведения, и даже открыть для себя что-то новенькое. Готовы начать?",
+                chatId,
+                $"📚 Добро пожаловать в мир знаний, {username}! 📚\r\n\r\nЯ – твой верный компаньон в литературном путешествии. Здесь ты можешь найти рекомендации, обсудить любимые произведения, и даже открыть для себя что-то новенькое. Готов начать?  Выбери один из жанров саморазвития:",
                 replyMarkup: keyboard
             );
         }
@@ -67,51 +89,60 @@ namespace TelegramBotExperiments
         public static async Task HandleCallbackQueryAsync(CallbackQuery callbackQuery)
         {
             var message = callbackQuery.Message;
-            if (callbackQuery.Data == "/book")
+
+            if (int.TryParse(callbackQuery.Data, out int selectedGenre))
             {
-                var genresList = @"Выбери один из пунктов:
+                string genreName = GetGenreName(selectedGenre);
+                string bookList = GetBookList(selectedGenre);
 
-1. Психология и Самопомощь: Книги об осознанности, развитии личности, управлении стрессом, преодолении трудностей и создании позитивного мышления.
+                // Send a message with the selected genre name and book list
+                await bot.SendTextMessageAsync(message.Chat.Id, $"Вы выбрали: {genreName}\n\n{bookList}");
+            }
+        }
 
-2. Бизнес и Карьера: Литература о предпринимательстве, лидерстве, управлении временем, развитии навыков коммуникации, эффективности работы и т.д.
-
-3. Здоровье и Фитнес: Книги о здоровом образе жизни, питании, спорте, медитации и общем физическом благополучии.
-
-4. Личные Финансы: Ресурсы о финансовом планировании, инвестировании, управлении долгами и создании стабильного финансового будущего.
-
-5. Мотивация и Самодисциплина: Книги, которые помогут вам находить вдохновение, устанавливать и достигать целей, развивать самодисциплину.
-
-6. Образование и Новые Навыки: Литература о самообразовании, изучении новых навыков, повышении квалификации и постоянном обучении.
-
-7. Социальные отношения: Книги о межличностных отношениях, общении, любви и взаимопонимании.
-
-8. Религия и Духовное Развитие: Ресурсы, посвященные духовному росту, медитации, практикам осознанности и т.п.
-
-9. Искусство и Творчество: Книги, которые помогут вам развивать творческий потенциал, вдохновляться и раскрывать свой творческий потенциал.";
-
-                var keyboard = new ReplyKeyboardMarkup(new[]
-                    {
-            new[]
+        private static string GetGenreName(int selectedGenre)
+        {
+            switch (selectedGenre)
             {
-                new KeyboardButton("Психология и Самопомощь"),
-                new KeyboardButton("Бизнес и Карьера"),
-                new KeyboardButton("Здоровье и Фитнес"),
-            },
-            new[]
-            {
-                new KeyboardButton("Личные Финансы"),
-                new KeyboardButton("Мотивация и Самодисциплина"),
-                new KeyboardButton("Образование и Новые Навыки"),
-            },
-            new[]
-            {
-                new KeyboardButton("Социальные отношения"),
-                new KeyboardButton("Религия и Духовное Развитие"),
-                new KeyboardButton("Искусство и Творчество"),
-            },
-        });
+                case 1:
+                    return "Психология и самопомощь";
+                case 2:
+                    return "Бизнес и карьера";
+                case 3:
+                    return "Здоровье и фитнес";
+                case 4:
+                    return "Личные финансы";
+                case 5:
+                    return "Мотивация и дисциплина";
+                case 6:
+                    return "Социальные отношения";
+                case 7:
+                    return "Искусство и творчество";
+                default:
+                    return "Неизвестный жанр";
+            }
+        }
 
-                await bot.SendTextMessageAsync(message.Chat.Id, genresList, replyMarkup: keyboard);
+        private static string GetBookList(int selectedGenre)
+        {
+            switch (selectedGenre)
+            {
+                case 1:
+                    return "1. Книга 1\n2. Книга 2\n3. Книга 3";
+                case 2:
+                    return "1. Книга A\n2. Книга B\n3. Книга C";
+                case 3:
+                    return "1. Книга A\n2. Книга B\n3. Книга C";
+                case 4:
+                    return "1. Книга A\n2. Книга B\n3. Книга C";
+                case 5:
+                    return "1. Книга A\n2. Книга B\n3. Книга C";
+                case 6:
+                    return "1. Книга A\n2. Книга B\n3. Книга C";
+                case 7:
+                    return "1. Книга A\n2. Книга B\n3. Книга C";
+                default:
+                    return "Нет доступного списка книг для этого жанра";
             }
         }
 
@@ -123,7 +154,7 @@ namespace TelegramBotExperiments
             var cancellationToken = cts.Token;
             var receiverOptions = new ReceiverOptions
             {
-                AllowedUpdates = { }, // receive all update types
+                AllowedUpdates = { },
             };
             bot.StartReceiving(
                 HandleUpdateAsync,
